@@ -6,13 +6,15 @@
 
 package com.bridgelabz.bookswagon.pages;
 
-import org.apache.xmlbeans.impl.schema.SchemaDependencies;
+import com.bridgelabz.bookswagon.utility.CustomException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+
+import java.util.List;
 
 public class Dashboard {
     public static AddressForm addressForm;
@@ -30,9 +32,6 @@ public class Dashboard {
 
     @FindBy(xpath = "//input[@id='ctl00_TopSearch1_Button1']")
     WebElement searchButton;
-
-//    @FindBy(xpath = "//a[text()='Wings of Fire']")
-//    WebElement check;
 
     @FindBy(xpath = "//a[text()='The Rose Code']")
     WebElement book;
@@ -55,7 +54,7 @@ public class Dashboard {
     @FindBy(xpath = "//a[text()='New Arrivals']")
     WebElement newArrivalButton;
 
-    @FindBy(id="ctl00_cpBody_imgSaveNew")
+    @FindBy(id = "ctl00_cpBody_imgSaveNew")
     WebElement saveAndContinue;
 
     @FindBy(xpath = "//body/form[@id='aspnetForm']/div[@id='site-wrapper']/div[1]/div[1]/div[1]/div[4]/div[1]/ul[1]/li[1]/a[1]/span[1]")
@@ -70,11 +69,18 @@ public class Dashboard {
     @FindBy(xpath = "//a[text()='Login']")
     static WebElement login;
 
-    @FindBy(id="BookCart_lvCart_ctrl0_txtQty")
+    @FindBy(id = "BookCart_lvCart_ctrl0_txtQty")
     WebElement quantity;
 
-    @FindBy(id="BookCart_lvCart_ctrl0_rngQty")
+    @FindBy(id = "BookCart_lvCart_ctrl0_rngQty")
     WebElement errorMessage;
+
+    @FindBy(xpath = "//a[text()='Books']")
+    WebElement booksModule;
+
+    //list-view-books
+    @FindBy(className = "title")
+    List<WebElement> bookList;
 
     public Dashboard(WebDriver driver) {
         PageFactory.initElements(driver, this);
@@ -90,25 +96,25 @@ public class Dashboard {
         js.executeScript("arguments[0].click()", searchButton);
         WebElement check = webdriver.findElement(By.xpath("//a[text()='" + bookName + "']"));
         if (check.isDisplayed()) {
-                check.click();
-                Thread.sleep(1000);
-                addToCart.click();
-                Thread.sleep(500);
-                closeWindow.click();
-                Thread.sleep(500);
-                selectCart.click();
-                Thread.sleep(3000);
-                webdriver.switchTo().frame(1);
-                Thread.sleep(3000);
-                placeOrder.click();
-                webdriver.switchTo().parentFrame();
-                Thread.sleep(1000);
-                continueButton.click();
-                addressForm.FillAddressDetails();
-                checkout.checkOutFromCart();
-                payment.makePayment();
-                return true;
-            }else return false;
+            check.click();
+            Thread.sleep(1000);
+            addToCart.click();
+            Thread.sleep(500);
+            closeWindow.click();
+            Thread.sleep(500);
+            selectCart.click();
+            Thread.sleep(3000);
+            webdriver.switchTo().frame(1);
+            Thread.sleep(3000);
+            placeOrder.click();
+            webdriver.switchTo().parentFrame();
+            Thread.sleep(1000);
+            continueButton.click();
+            addressForm.FillAddressDetails();
+            checkout.checkOutFromCart();
+            payment.makePayment();
+            return true;
+        } else return false;
     }
 
     //method to place an order for book for not in stalk
@@ -116,9 +122,9 @@ public class Dashboard {
         searchBox.sendKeys(bookName);
         JavascriptExecutor js = (JavascriptExecutor) webdriver;
         js.executeScript("arguments[0].click()", searchButton);
-        WebElement checkBook = webdriver.findElement(By.xpath("//span[text()='"+bookName+"']"));
+        WebElement checkBook = webdriver.findElement(By.xpath("//span[text()='" + bookName + "']"));
         try {
-            if(checkBook.isDisplayed()) {
+            if (checkBook.isDisplayed()) {
                 addToWishlist.click();
             }
             return checkWishlist.isDisplayed();
@@ -133,7 +139,7 @@ public class Dashboard {
         addressForm = new AddressForm(webdriver);
         checkout = new Checkout(webdriver);
         payment = new Payment(webdriver);
-         try {
+        try {
             newArrivalButton.click();
             book.click();
             Thread.sleep(500);
@@ -161,7 +167,7 @@ public class Dashboard {
     }
 
     //method to place an order for book in new arrival with invalid quantity
-    public Boolean placeOrderForNewArrivalWithInvalidQuantity(WebDriver webdriver) {
+    public Boolean placeOrderForNewArrivalWithInvalidQuantity(WebDriver webdriver) throws CustomException {
         addressForm = new AddressForm(webdriver);
         checkout = new Checkout(webdriver);
         payment = new Payment(webdriver);
@@ -181,19 +187,47 @@ public class Dashboard {
             quantity.sendKeys("0");
             placeOrder.click();
             return errorMessage.isDisplayed();
+        } catch (NullPointerException | InterruptedException e) {
+            throw new CustomException("Searched Topic is not found in the list", CustomException.ExceptionType.NULL_VALUE);
+        }
+    }
+
+    //method to buy book with particular topic
+    public boolean BuyBook(WebDriver webdriver, String topic) throws InterruptedException, CustomException {
+        String bookName;
+        try {
+                booksModule.click();
+                WebElement selectType = webdriver.findElement(By.xpath("//a[contains(text(),'" + topic + "')]"));
+                selectType.click();
+                bookName = bookList.get(5).getText();
+                bookList.get(5).click();
+                Thread.sleep(500);
+                addToCart.click();
+                Thread.sleep(500);
+                closeWindow.click();
+                Thread.sleep(500);
+                selectCart.click();
+                Thread.sleep(3000);
+                webdriver.switchTo().frame(1);
+                Thread.sleep(3000);
+                continueButton.click();
+                addressForm.FillAddressDetails();
+                checkout.checkOutFromCart();
+                payment.makePayment();
+            return true;
+        } catch (NullPointerException e) {
+            throw new CustomException("Searched Topic is not found in the list", CustomException.ExceptionType.NULL_VALUE);
+        }
+    }
+
+    //method to logout from account
+    public static Boolean logoutFromAccount() {
+        try {
+            menuButton.click();
+            logoutButton.click();
         } catch (Exception e) {
             e.printStackTrace();
-            return errorMessage.isDisplayed();
         }
+        return login.isDisplayed();
     }
-        //method to logout from account
-        public static Boolean logoutFromAccount() {
-            try {
-                menuButton.click();
-                logoutButton.click();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return login.isDisplayed();
-        }
-    }
+}

@@ -59,7 +59,7 @@ public class Base implements Constants {
     public void tearDown() throws Exception {
         endTest();
         webdriver.close();
-//      Email.sendEmail();
+      Email.sendEmail();
     }
 
     //method to run before class to generate extent report

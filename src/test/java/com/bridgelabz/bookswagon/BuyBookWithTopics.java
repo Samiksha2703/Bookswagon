@@ -9,11 +9,11 @@ import com.relevantcodes.extentreports.LogStatus;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.testng.internal.ExpectedExceptionsHolder;
 
 import java.io.IOException;
 
-public class BuyBookWithInvalidQuantity extends Base {
-
+public class BuyBookWithTopics extends Base {
     Login login;
     Dashboard dashboard;
 
@@ -23,7 +23,6 @@ public class BuyBookWithInvalidQuantity extends Base {
     @Test(priority = 1)
     public void login_Into_Account() throws InterruptedException, IOException {
         login = new Login(webdriver);
-        dashboard = new Dashboard(webdriver);
         Boolean check = login.loginIntoAccount("shende.samiksha@rediffmail.com", "BookswagonSamiksha");
         if (check) {
             test.log(LogStatus.PASS, test.addScreenCapture(Utility.screenshot("loginPage")));
@@ -34,22 +33,17 @@ public class BuyBookWithInvalidQuantity extends Base {
         log.info("Test case to check the login functionality");
     }
 
-    //test to check the functionality of new arrival module
-    @Test(priority = 2)
-    public void place_An_Order() throws InterruptedException, IOException, CustomException {
+    //test to check the functionality of Books module
+    @Test
+    public void buyBook_WithGivenTopic() throws InterruptedException, CustomException {
         dashboard = new Dashboard(webdriver);
-        Boolean check = dashboard.placeOrderForNewArrivalWithInvalidQuantity(webdriver);
-        Thread.sleep(3000);
         try {
-            if (check) {
-                test.log(LogStatus.PASS, test.addScreenCapture(Utility.screenshot("orderPage")));
-            } else {
-                test.log(LogStatus.FAIL, test.addScreenCapture(Utility.screenshot("orderPage")));
-            }
-        } catch (IOException e) {
+            Boolean check = dashboard.BuyBook(webdriver, "Lifestyle");
+        } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch (CustomException e) {
+            e.printStackTrace();
+            //Assert.assertEquals("Searched Topic is not found in the list",e.getMessage());
         }
-        Assert.assertTrue(check);
-        log.info("Test case to check the search button functionality");
     }
 }

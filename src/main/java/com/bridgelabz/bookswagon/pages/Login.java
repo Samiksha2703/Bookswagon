@@ -6,6 +6,7 @@
 
 package com.bridgelabz.bookswagon.pages;
 
+import com.bridgelabz.bookswagon.utility.CustomException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
